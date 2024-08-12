@@ -6,31 +6,92 @@
 	<title>Document</title>
 </head>
 <body>
+	<button id="connect-bt-btn">Connect Bluetooth</button>
+	<br>
+	<code id="log-output"></code>
+
 	<script>
-		if (navigator.requestMIDIAccess) {
-			navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure)
-		} else {
-			window.alert('Web MIDI API is not supported in this browser.')
-		}
-		
-		function onMIDISuccess(midiAccess) {
-			midiAccess.inputs.forEach((input) => {
-				input.onmidimessage = handleMIDIMessage;
-			})
+		const BT_MIDI_SERVICE_UID = '03B80E5A-EDE8-4B33-A751-6CE34EC4C700'.toLowerCase();
+		const MIDI_CHARACTERISTIC_UID = '7772E5DB-3868-4112-A1A9-F2669D106BF3'.toLowerCase();
+		const $connectBt = document.querySelector('#connect-bt-btn');
+		const $logOutput = document.querySelector('#log-output');
+
+		const printLog = (msg) => {
+			$logOutput.innerHTML = $logOutput.innerHTML + '<br>' + msg;
 		}
 
-		function onMIDIFailure() {
-			window.alert('Could not access your MIDI device.');
-		}
-		
-		function handleMIDIMessage(messsage) {
-			const [status, pianoKey, pressVelocity] = message.data;
+		$connectBt.addEventListener('click', () => {
+			navigator.bluetooth.requestDevice({ filters: [{ services: [BT_MIDI_SERVICE_UID] }] })
+				.then(device => {
+					console.log('Bluetooth Device Details: ', device);
+					printLog(`Connected to device: ${device.name} (id: ${device.id})`)
 
-			if (status === 144) {
-				window.alert(`Key pressed: ${pianoKey}, Velocity: ${pressVelocity}`);
-			} else if (status === 128) {
-				console.log(`Key released: ${pianoKey}`);
+					return device.gatt.connect();
+				 })
+				 .then((btRemoteGattServer) => {
+					console.log('btRemoteGattServer', btRemoteGattServer);
+					printLog(`Is GATT server connected? ${btRemoteGattServer.connected}`);
+					printLog('Getting GATT server primary service...');
+
+					return btRemoteGattServer.getPrimaryService(BT_MIDI_SERVICE_UID);
+				 })
+				 .then((btRemoteGattService) => {
+					console.log('btRemoteGattService', btRemoteGattService);
+					printLog(`BT Remote GATT Service UUID: ${btRemoteGattService.uuid} (isPrimary?: ${btRemoteGattService.isPrimary})`);
+
+					return btRemoteGattService.getCharacteristic(MIDI_CHARACTERISTIC_UID);
+				 })
+				 .then((btRemoteGattCharacteristic) => {
+					console.log('btRemoteGattCharacteristic', btRemoteGattCharacteristic);
+					printLog(`btRemoteGattCharacteristic UUID: ${btRemoteGattCharacteristic.uuid}`);
+					printLog(`btRemoteGattCharacteristic Starting notifications...`);
+					printLog(`--------- NADEDETECT NA ANG PIANO KEYS AT NOTE TRAINER WITH RANDOMIZER NA LANG ANG KULANG PARA MASAYA ---------`);
+
+					btRemoteGattCharacteristic.startNotifications()
+						.then(() => {
+							btRemoteGattCharacteristic.addEventListener('characteristicvaluechanged', handleMIDIMessage);
+						});
+				 })
+				.catch(error => { 
+					console.error(error);
+				});
+		});
+
+		const PIANO_KEYDOWN_INT = 144;
+		const OCTAVE_KEY_COUNT = 12;
+		const pianoKeyMaps = [
+			{ name: 'C', note: 0 },
+			{ name: 'C# (or Db)', note: 1 },
+			{ name: 'D', note: 2 },
+			{ name: 'D# (or Eb)', note: 3 },
+			{ name: 'E', note: 4 },
+			{ name: 'F', note: 5 },
+			{ name: 'F# (or Gb)', note: 6 },
+			{ name: 'G', note: 7 },
+			{ name: 'G# (or Ab)', note: 8 },
+			{ name: 'A', note: 9 },
+			{ name: 'A# (or Bb)', note: 10 },
+			{ name: 'B', note: 11 },
+		]
+
+		function handleMIDIMessage(midiMsgEvent) {
+			const value = event.target.value;
+			const data = [];
+
+			for (let i = 0; i < value.byteLength; i++) {
+				data.push(value.getUint8(i));
 			}
+
+			const [status, data1, data2, note, velocity] = data;
+			
+			// Do nothing except when piano keydown (ignore keyup events)
+			if (data2 !== PIANO_KEYDOWN_INT) return;
+
+			const octavePosition = note % OCTAVE_KEY_COUNT;
+			const keyNote = pianoKeyMaps.find((keyMap) => keyMap.note === octavePosition);
+
+			console.log('Received MIDI data:', data);
+			printLog(`Key: ${keyNote?.name} | Note Id: ${note} | Velocity: ${velocity}`);
 		}
 	</script>
 </body>
