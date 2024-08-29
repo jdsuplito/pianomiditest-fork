@@ -158,7 +158,7 @@
 
 	<script>
 		// ----------- CLEF LOGIC -----------
-		const TRAVEL_SPEED = 10;
+		const TRAVEL_SPEED = 7;
 		const travelTimeMs = parseInt(window.getComputedStyle(document.body).getPropertyValue('--note-speed-ms'));
 		const trebleContainer = document.querySelector('#treble-container');
 		const correctContainer = document.querySelector('#correct-count');
@@ -181,6 +181,7 @@
 			{ name: 'a5', id: 81 }
 		];
 		const activeNotes = [];
+		let isGameStarted = false;
 
 		const insertTrebleNote = (noteObject) => {
 			const newNote = document.createElement('div');
@@ -191,23 +192,26 @@
 			activeNotes.push(newNote);
 		}
 
-		setInterval(() => {
-			activeNotes.forEach((activeNote) => {
-				const currentLeft = parseInt(window.getComputedStyle(activeNote).left);
-				const newLeft = currentLeft - TRAVEL_SPEED;
-				if (newLeft <= 0) {
-					activeNote.remove();
-					activeNotes.shift();
-					missedContainer.innerText = parseInt(missedContainer.innerText) + 1;
-				}
-				activeNote.style.left = `${newLeft}px`;
-			});
-		}, 100);
-
-		setInterval(() => {
-			const newNote = possibleNotes[Math.floor(Math.random() * possibleNotes.length)]
-			insertTrebleNote(newNote);
-		}, 1000);
+		function startGame () {
+			isGameStarted = true;
+			setInterval(() => {
+				activeNotes.forEach((activeNote) => {
+					const currentLeft = parseInt(window.getComputedStyle(activeNote).left);
+					const newLeft = currentLeft - TRAVEL_SPEED;
+					if (newLeft <= 0) {
+						activeNote.remove();
+						activeNotes.shift();
+						missedContainer.innerText = parseInt(missedContainer.innerText) + 1;
+					}
+					activeNote.style.left = `${newLeft}px`;
+				});
+			}, 100);
+	
+			setInterval(() => {
+				const newNote = possibleNotes[Math.floor(Math.random() * possibleNotes.length)]
+				insertTrebleNote(newNote);
+			}, 1000);
+		}
 
 		const updateClefOnKeypress = (noteId) => {
 			console.log(noteId)
@@ -287,6 +291,10 @@
 		]
 
 		function handleMIDIMessage(midiMsgEvent) {
+			if (!isGameStarted) {
+				startGame();
+			}
+
 			const value = event.target.value;
 			const data = [];
 
