@@ -1,12 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Music&display=swap');
+
 :root {
   /* Total time it takes for each note to fully travel from right to left */
-  --note-speed-ms: 30000ms;
+  --note-speed-ms: 20000ms;
 }
 
 * {
   margin: 0;
   border: 0;
   box-sizing: border-box;
+}
+
+.notes-fonts {
+  font-family: "Noto Music", sans-serif;
+  font-weight: 400;
+  font-style: normal;
 }
 
 .score-container {

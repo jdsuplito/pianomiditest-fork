@@ -1,5 +1,5 @@
 // ----------- CLEF LOGIC -----------
-const TRAVEL_SPEED = 6;
+const TRAVEL_SPEED = 7;
 const travelTimeMs = parseInt(
   window.getComputedStyle(document.body).getPropertyValue("--note-speed-ms")
 );
@@ -150,7 +150,6 @@ const pianoKeyMaps = [
 function handleMIDIMessage(midiMsgEvent) {
   if (!isGameStarted) {
     startGame();
-    printLog(`FIRST PRESS`);
   }
 
   const value = event.target.value;

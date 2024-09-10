@@ -150,7 +150,6 @@ const pianoKeyMaps = [
 function handleMIDIMessage(midiMsgEvent) {
   if (!isGameStarted) {
     startGame();
-    printLog(`FIRST PRESS`);
   }
 
   const value = event.target.value;
