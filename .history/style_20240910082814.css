@@ -1,0 +1,149 @@
+:root {
+  /* Total time it takes for each note to fully travel from right to left */
+  --note-speed-ms: 20000ms;
+}
+
+* {
+  margin: 0;
+  border: 0;
+  box-sizing: border-box;
+}
+
+.score-container {
+  padding: 32px
+}
+
+#treble-container {
+  position: relative;
+  margin: 32px;
+  height: 68px;
+}
+
+.treble-line {
+  background-color: #000;
+  height: 2px;
+  width: 100%;
+  position: absolute;
+  transform: translateY(1px);
+  vertical-align: baseline;
+}
+
+.treble-line.ln-1 {
+  top: 0;
+}
+
+.treble-line.ln-2 {
+  top: 16px;
+}
+
+.treble-line.ln-3 {
+  top: 32px;
+}
+
+.treble-line.ln-4 {
+  top: 48px;
+}
+
+.treble-line.ln-5 {
+  top: 64px;
+}
+
+.treble-note {
+  position: absolute;
+  width: 24px;
+  height: 16px;
+  background-color: hsl(0, 0%, 0%);
+  border-radius: 50%;
+  transform-origin: center;
+  left: calc(100% - 55px);
+  transition: all 100ms linear;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.treble-note.c4 {
+  top: calc(8px * 9 + 2px);
+}
+
+.treble-note.d4 {
+  top: calc(8px * 8 + 2px);
+}
+
+.treble-note.e4 {
+  top: calc(8px * 7 + 2px);
+}
+
+.treble-note.f4 {
+  top: calc(8px * 6 + 2px);
+}
+
+.treble-note.g4 {
+  top: calc(8px * 5 + 2px);
+}
+
+.treble-note.a4 {
+  top: calc(8px * 4 + 2px);
+}
+
+.treble-note.b4 {
+  top: calc(8px * 3 + 2px);
+}
+
+.treble-note.c5 {
+  top: calc(8px * 2 + 2px);
+}
+
+.treble-note.d5 {
+  top: calc(8px * 1 + 2px);
+}
+
+.treble-note.e5 {
+  top: calc(8px * 0 + 2px);
+}
+
+.treble-note.e5 {
+  top: calc(8px * 0 + 2px);
+}
+
+.treble-note.f5 {
+  top: calc(8px * -1 + 2px);
+}
+
+.treble-note.g5 {
+  top: calc(8px * -2 + 2px);
+}
+
+.treble-note.a5 {
+  top: calc(8px * -3 + 2px);
+}
+
+/* bottom line and anoter one */
+.treble-note.b5 {
+  top: calc(8px * -4 + 2px);
+}
+
+.treble-note.c4::after,
+.treble-note.a5::after {
+  content: '';
+  background-color: #000;
+  width: 42px;
+  height: 2px;
+  position: absolute;
+}
+
+.treble-note.b5::after {
+  content: '';
+  background-color: #000;
+  width: 42px;
+  height: 2px;
+  align-self: flex-end;
+  position: absolute;
+}
+
+#log-output {
+  display: inline-block;
+  background-color: lightcyan;
+  height: 100px;
+  overflow: scroll;
+}
