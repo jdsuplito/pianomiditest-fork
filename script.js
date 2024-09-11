@@ -82,13 +82,13 @@ const updateClefOnKeypress = (noteId, forceCorrect) => {
 };
 
 // Temporary for testing
-document.addEventListener("keyup", (event) => {
-  if (event.code === "Space") {
-    updateClefOnKeypress(null, true);
-  } else if (event.code === "KeyR") {
-    updateClefOnKeypress(0, false);
-  }
-});
+// document.addEventListener("keyup", (event) => {
+//   if (event.code === "Space") {
+//     updateClefOnKeypress(null, true);
+//   } else if (event.code === "KeyR") {
+//     updateClefOnKeypress(0, false);
+//   }
+// });
 
 // ----------- BLUETOOTH CONNECTION -----------
 const BT_MIDI_SERVICE_UID =
@@ -167,12 +167,12 @@ const pianoKeyMaps = [
 ];
 
 // for testing without piano keyboard
-startGame();
+// startGame();
 
 function handleMIDIMessage(midiMsgEvent) {
   if (!isGameStarted) {
     startGame();
-    printLog(`FIRST PRESS`);
+    // printLog(`FIRST PRESS`);
   }
 
   const value = event.target.value;
