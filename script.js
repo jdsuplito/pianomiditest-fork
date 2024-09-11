@@ -1,12 +1,15 @@
 // ----------- CLEF LOGIC -----------
 const TRAVEL_SPEED = 7;
-const travelTimeMs = parseInt(
-  window.getComputedStyle(document.body).getPropertyValue("--note-speed-ms")
-);
+// How often the position of the treble notes is refreshed
+const NOTE_MOVEMENT_REFRESH_RATE_MS = 50;
+// The space from the left edge where the treble notes stop moving
+const LEFT_THRESHOLD = 80;
+// The number of milliseconds between each new note that is inserted
+const NEW_NOTE_INTERVAL_MS = 1500;
 const trebleContainer = document.querySelector("#treble-container");
 const correctContainer = document.querySelector("#correct-count");
 const incorrectContainer = document.querySelector("#incorrect-count");
-const missedContainer = document.querySelector("#missed-count");
+let isGamePaused = false;
 
 const possibleNotes = [
   { name: "c4", id: 60 },
@@ -39,37 +42,53 @@ function startGame() {
   isGameStarted = true;
   setInterval(() => {
     activeNotes.forEach((activeNote) => {
+      if (isGamePaused) {
+        return;
+      }
       const currentLeft = parseInt(window.getComputedStyle(activeNote).left);
       const newLeft = currentLeft - TRAVEL_SPEED;
-      if (newLeft <= 0) {
-        activeNote.remove();
-        activeNotes.shift();
-        missedContainer.innerText = parseInt(missedContainer.innerText) + 1;
+      if (newLeft <= LEFT_THRESHOLD) {
+        isGamePaused = true;
+        return;
       }
       activeNote.style.left = `${newLeft}px`;
     });
-  }, 100);
+  }, NOTE_MOVEMENT_REFRESH_RATE_MS);
 
   setInterval(() => {
+    if (isGamePaused) {
+      return;
+    }
     const newNote =
       possibleNotes[Math.floor(Math.random() * possibleNotes.length)];
     insertTrebleNote(newNote);
-  }, 1000);
+  }, NEW_NOTE_INTERVAL_MS);
 }
 
-const updateClefOnKeypress = (noteId) => {
+const updateClefOnKeypress = (noteId, forceCorrect) => {
   console.log(noteId);
   const oldestActiveNoteId = parseInt(
-    activeNotes[0].getAttribute("data-note-id")
+    activeNotes[0]?.getAttribute("data-note-id")
   );
-  if (oldestActiveNoteId === noteId) {
+  if (oldestActiveNoteId === noteId || forceCorrect) {
     activeNotes[0].remove();
     activeNotes.shift();
     correctContainer.innerText = parseInt(correctContainer.innerText) + 1;
+    isGamePaused = false;
   } else {
     incorrectContainer.innerText = parseInt(incorrectContainer.innerText) + 1;
+    activeNotes[0]?.classList.add("incorrect-note");
   }
 };
+
+// Temporary for testing
+document.addEventListener("keyup", (event) => {
+  if (event.code === "Space") {
+    updateClefOnKeypress(null, true);
+  } else if (event.code === "KeyR") {
+    updateClefOnKeypress(0, false);
+  }
+});
 
 // ----------- BLUETOOTH CONNECTION -----------
 const BT_MIDI_SERVICE_UID =
@@ -146,6 +165,9 @@ const pianoKeyMaps = [
   { name: "A# (or Bb)", note: 10 },
   { name: "B", note: 11 },
 ];
+
+// for testing without piano keyboard
+startGame();
 
 function handleMIDIMessage(midiMsgEvent) {
   if (!isGameStarted) {
