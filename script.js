@@ -127,13 +127,13 @@ const updateClefOnKeypress = (noteId, forceCorrect = false) => {
 };
 
 // Temporary for testing
-document.addEventListener("keyup", (event) => {
-  if (event.code === "Space") {
-    updateClefOnKeypress(null, true);
-  } else if (event.code === "KeyR") {
-    updateClefOnKeypress(0, false);
-  }
-});
+// document.addEventListener("keyup", (event) => {
+//   if (event.code === "Space") {
+//     updateClefOnKeypress(null, true);
+//   } else if (event.code === "KeyR") {
+//     updateClefOnKeypress(0, false);
+//   }
+// });
 
 // ----------- BLUETOOTH CONNECTION -----------
 // Constants for the Bluetooth MIDI service and characteristics
@@ -204,7 +204,7 @@ const PIANO_KEYDOWN_INT = 144; // MIDI value for keydown event
 const OCTAVE_KEY_COUNT = 12; // Number of keys per octave on the piano
 
 // for testing without piano keyboard
-startGame();
+// startGame();
 
 // Handles incoming MIDI messages and triggers the appropriate game logic
 function handleMIDIMessage(midiMsgEvent) {
@@ -215,7 +215,7 @@ function handleMIDIMessage(midiMsgEvent) {
 
   for (let i = 0; i < value.byteLength; i++) {
     data.push(value.getUint8(i));
-    console.log("DATA:", data);
+    printLog(`DATA: ${data}`);
   }
 
   const [data2, note, velocity] = data;
