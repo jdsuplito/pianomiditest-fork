@@ -1,17 +1,19 @@
 // ----------- CLEF LOGIC -----------
-const TRAVEL_SPEED = 7;
-// How often the position of the treble notes is refreshed
-const NOTE_MOVEMENT_REFRESH_RATE_MS = 50;
-// The space from the left edge where the treble notes stop moving
-const LEFT_THRESHOLD = 80;
-// The number of milliseconds between each new note that is inserted
-const NEW_NOTE_INTERVAL_MS = 1500;
+// Constants that control various aspects of note movement and timing
+const TRAVEL_SPEED = 7; // Speed at which the treble notes move across the screen
+const NOTE_MOVEMENT_REFRESH_RATE_MS = 50; // Interval in milliseconds at which note positions are refreshed
+const LEFT_THRESHOLD = 80; // Distance from the left edge where notes stop moving
+const NEW_NOTE_INTERVAL_MS = 1500; // Interval in milliseconds between new note creation
+
+// DOM elements to display notes and track correct/incorrect actions
 const trebleContainer = document.querySelector("#treble-container");
 const correctContainer = document.querySelector("#correct-count");
 const incorrectContainer = document.querySelector("#incorrect-count");
-let isGamePaused = false;
 
-const possibleNotes = [
+let isGamePaused = false; // Tracks whether the game is paused or not
+
+// List of possible notes and their corresponding MIDI note IDs
+const possibleTrebleNotes = [
   { name: "c4", id: 60 },
   { name: "d4", id: 62 },
   { name: "e4", id: 64 },
@@ -26,58 +28,62 @@ const possibleNotes = [
   { name: "g5", id: 79 },
   { name: "a5", id: 81 },
 ];
-const activeNotes = [];
-let isGameStarted = false;
 
+const activeNotes = []; // Array to keep track of active notes
+let isGameStarted = false; // Flag to check if the game has started
+
+// Inserts a new note into the DOM and adds it to the list of active notes
 const insertTrebleNote = (noteObject) => {
   const newNote = document.createElement("div");
-  newNote.classList.add("treble-note");
-  newNote.classList.add(noteObject.name);
+  newNote.classList.add("treble-note", noteObject.name);
   newNote.setAttribute("data-note-id", noteObject.id);
   trebleContainer.appendChild(newNote);
   activeNotes.push(newNote);
 };
 
+// Starts the game logic, handling note movement and periodic note insertion
 function startGame() {
   isGameStarted = true;
+
+  // Moves notes leftward every NOTE_MOVEMENT_REFRESH_RATE_MS milliseconds
   setInterval(() => {
     activeNotes.forEach((activeNote) => {
-      if (isGamePaused) {
-        return;
-      }
+      if (isGamePaused) return; // Stop movement if the game is paused
+
       const currentLeft = parseInt(window.getComputedStyle(activeNote).left);
       const newLeft = currentLeft - TRAVEL_SPEED;
       if (newLeft <= LEFT_THRESHOLD) {
-        isGamePaused = true;
+        isGamePaused = true; // Pause the game when a note reaches the left threshold
         return;
       }
-      activeNote.style.left = `${newLeft}px`;
+      activeNote.style.left = `${newLeft}px`; // Move the note left
     });
   }, NOTE_MOVEMENT_REFRESH_RATE_MS);
 
+  // Adds a new random note every NEW_NOTE_INTERVAL_MS milliseconds
   setInterval(() => {
-    if (isGamePaused) {
-      return;
-    }
+    if (isGamePaused) return; // Skip adding notes if the game is paused
     const newNote =
-      possibleNotes[Math.floor(Math.random() * possibleNotes.length)];
+      possibleTrebleNotes[
+        Math.floor(Math.random() * possibleTrebleNotes.length)
+      ];
     insertTrebleNote(newNote);
   }, NEW_NOTE_INTERVAL_MS);
 }
 
-const updateClefOnKeypress = (noteId, forceCorrect) => {
-  console.log(noteId);
+// Updates the state of the clef when a key press occurs, marking notes as correct or incorrect
+const updateClefOnKeypress = (noteId, forceCorrect = false) => {
   const oldestActiveNoteId = parseInt(
     activeNotes[0]?.getAttribute("data-note-id")
   );
   if (oldestActiveNoteId === noteId || forceCorrect) {
-    activeNotes[0].remove();
-    activeNotes.shift();
-    correctContainer.innerText = parseInt(correctContainer.innerText) + 1;
-    isGamePaused = false;
+    activeNotes[0].remove(); // Remove the oldest note
+    activeNotes.shift(); // Remove the note from the active notes list
+    correctContainer.innerText = parseInt(correctContainer.innerText) + 1; // Update correct count
+    isGamePaused = false; // Resume the game
   } else {
-    incorrectContainer.innerText = parseInt(incorrectContainer.innerText) + 1;
-    activeNotes[0]?.classList.add("incorrect-note");
+    incorrectContainer.innerText = parseInt(incorrectContainer.innerText) + 1; // Update incorrect count
+    activeNotes[0]?.classList.add("incorrect-note"); // Mark the note as incorrect
   }
 };
 
@@ -91,18 +97,23 @@ const updateClefOnKeypress = (noteId, forceCorrect) => {
 // });
 
 // ----------- BLUETOOTH CONNECTION -----------
+// Constants for the Bluetooth MIDI service and characteristics
 const BT_MIDI_SERVICE_UID =
   "03B80E5A-EDE8-4B33-A751-6CE34EC4C700".toLowerCase();
 const MIDI_CHARACTERISTIC_UID =
   "7772E5DB-3868-4112-A1A9-F2669D106BF3".toLowerCase();
+
+// DOM elements for Bluetooth connection and logs
 const $connectBt = document.querySelector("#connect-bt-btn");
 const $logOutput = document.querySelector("#log-output");
 
+// Appends log messages to the log output area and scrolls to the bottom
 const printLog = (msg) => {
-  $logOutput.innerHTML = $logOutput.innerHTML + "<br>" + msg;
+  $logOutput.innerHTML += "<br>" + msg;
   $logOutput.scrollTo(0, $logOutput.scrollHeight);
 };
 
+// Bluetooth connection handler to connect to a MIDI device and start listening for keypresses
 $connectBt.addEventListener("click", () => {
   navigator.bluetooth
     .requestDevice({ filters: [{ services: [BT_MIDI_SERVICE_UID] }] })
@@ -149,8 +160,11 @@ $connectBt.addEventListener("click", () => {
     });
 });
 
-const PIANO_KEYDOWN_INT = 144;
-const OCTAVE_KEY_COUNT = 12;
+// Constants for MIDI note processing
+const PIANO_KEYDOWN_INT = 144; // MIDI value for keydown event
+const OCTAVE_KEY_COUNT = 12; // Number of keys per octave on the piano
+
+// Maps MIDI note values to corresponding piano notes
 const pianoKeyMaps = [
   { name: "C", note: 0 },
   { name: "C# (or Db)", note: 1 },
@@ -169,13 +183,11 @@ const pianoKeyMaps = [
 // for testing without piano keyboard
 // startGame();
 
+// Handles incoming MIDI messages and triggers the appropriate game logic
 function handleMIDIMessage(midiMsgEvent) {
-  if (!isGameStarted) {
-    startGame();
-    // printLog(`FIRST PRESS`);
-  }
+  if (!isGameStarted) startGame(); // Start game if it's the first key press
 
-  const value = event.target.value;
+  const value = midiMsgEvent.target.value;
   const data = [];
 
   for (let i = 0; i < value.byteLength; i++) {
