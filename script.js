@@ -13,21 +13,59 @@ const incorrectContainer = document.querySelector("#incorrect-count");
 let isGamePaused = false; // Tracks whether the game is paused or not
 
 // List of possible notes and their corresponding MIDI note IDs
-const possibleTrebleNotes = [
+const trebleNotes = [
   { name: "c4", id: 60 },
+  { name: "C#4 or Db4", id: 61 },
   { name: "d4", id: 62 },
+  { name: "D#4 or Eb4", id: 63 },
   { name: "e4", id: 64 },
   { name: "f4", id: 65 },
+  { name: "F#4 or Gb4", id: 66 },
   { name: "g4", id: 67 },
+  { name: "G#4 or Ab4", id: 68 },
   { name: "a4", id: 69 },
+  { name: "A#4 or Bb4", id: 70 },
   { name: "b4", id: 71 },
   { name: "c5", id: 72 },
+  { name: "C#5 or Db5", id: 73 },
   { name: "d5", id: 74 },
+  { name: "D#5 or Eb5", id: 75 },
   { name: "e5", id: 76 },
   { name: "f5", id: 77 },
+  { name: "F#5 or Gb5", id: 78 },
   { name: "g5", id: 79 },
+  { name: "G#5 or Ab5", id: 80 },
   { name: "a5", id: 81 },
+  { name: "A#5 or Bb5", id: 82 },
+  { name: "b5", id: 83 },
 ];
+
+// const posibleBassNotes = [
+//   { name: "c2", id: 36 },
+//   { name: "C#2 or Db2", id: 37 },
+//   { name: "d2", id: 38 },
+//   { name: "D#2 or Eb2", id: 39 },
+//   { name: "e2", id: 40 },
+//   { name: "f2", id: 41 },
+//   { name: "F#2 or Gb2", id: 42 },
+//   { name: "g2", id: 43 },
+//   { name: "G#2 or Ab2", id: 44 },
+//   { name: "a2", id: 45 },
+//   { name: "A#2 or Bb2", id: 46 },
+//   { name: "b2", id: 47 },
+//   { name: "c3", id: 48 },
+//   { name: "C#3 or Db3", id: 49 },
+//   { name: "d3", id: 50 },
+//   { name: "D#3 or Eb3", id: 51 },
+//   { name: "e3", id: 52 },
+//   { name: "f3", id: 53 },
+//   { name: "F#3 or Gb3", id: 54 },
+//   { name: "g3", id: 55 },
+//   { name: "G#3 or Ab3", id: 56 },
+//   { name: "a3", id: 57 },
+//   { name: "A#3 or Bb3", id: 58 },
+//   { name: "b3", id: 59 },
+// ];
 
 const activeNotes = []; // Array to keep track of active notes
 let isGameStarted = false; // Flag to check if the game has started
@@ -35,7 +73,11 @@ let isGameStarted = false; // Flag to check if the game has started
 // Inserts a new note into the DOM and adds it to the list of active notes
 const insertTrebleNote = (noteObject) => {
   const newNote = document.createElement("div");
-  newNote.classList.add("treble-note", noteObject.name);
+
+  // Replace spaces and invalid characters in the class name
+  const newNoteName = noteObject.name.replace(/\s+/g, "-"); // Replace spaces with hyphens
+
+  newNote.classList.add("treble-note", newNoteName);
   newNote.setAttribute("data-note-id", noteObject.id);
   trebleContainer.appendChild(newNote);
   activeNotes.push(newNote);
@@ -63,10 +105,7 @@ function startGame() {
   // Adds a new random note every NEW_NOTE_INTERVAL_MS milliseconds
   setInterval(() => {
     if (isGamePaused) return; // Skip adding notes if the game is paused
-    const newNote =
-      possibleTrebleNotes[
-        Math.floor(Math.random() * possibleTrebleNotes.length)
-      ];
+    const newNote = trebleNotes[Math.floor(Math.random() * trebleNotes.length)];
     insertTrebleNote(newNote);
   }, NEW_NOTE_INTERVAL_MS);
 }
@@ -88,13 +127,13 @@ const updateClefOnKeypress = (noteId, forceCorrect = false) => {
 };
 
 // Temporary for testing
-// document.addEventListener("keyup", (event) => {
-//   if (event.code === "Space") {
-//     updateClefOnKeypress(null, true);
-//   } else if (event.code === "KeyR") {
-//     updateClefOnKeypress(0, false);
-//   }
-// });
+document.addEventListener("keyup", (event) => {
+  if (event.code === "Space") {
+    updateClefOnKeypress(null, true);
+  } else if (event.code === "KeyR") {
+    updateClefOnKeypress(0, false);
+  }
+});
 
 // ----------- BLUETOOTH CONNECTION -----------
 // Constants for the Bluetooth MIDI service and characteristics
@@ -164,24 +203,8 @@ $connectBt.addEventListener("click", () => {
 const PIANO_KEYDOWN_INT = 144; // MIDI value for keydown event
 const OCTAVE_KEY_COUNT = 12; // Number of keys per octave on the piano
 
-// Maps MIDI note values to corresponding piano notes
-const pianoKeyMaps = [
-  { name: "C", note: 0 },
-  { name: "C# (or Db)", note: 1 },
-  { name: "D", note: 2 },
-  { name: "D# (or Eb)", note: 3 },
-  { name: "E", note: 4 },
-  { name: "F", note: 5 },
-  { name: "F# (or Gb)", note: 6 },
-  { name: "G", note: 7 },
-  { name: "G# (or Ab)", note: 8 },
-  { name: "A", note: 9 },
-  { name: "A# (or Bb)", note: 10 },
-  { name: "B", note: 11 },
-];
-
 // for testing without piano keyboard
-// startGame();
+startGame();
 
 // Handles incoming MIDI messages and triggers the appropriate game logic
 function handleMIDIMessage(midiMsgEvent) {
@@ -192,17 +215,20 @@ function handleMIDIMessage(midiMsgEvent) {
 
   for (let i = 0; i < value.byteLength; i++) {
     data.push(value.getUint8(i));
+    console.log("DATA:", data);
   }
 
-  const [status, data1, data2, note, velocity] = data;
+  const [data2, note, velocity] = data;
 
   // Do nothing except when piano keydown (ignore keyup events)
   if (data2 !== PIANO_KEYDOWN_INT) return;
 
   const octavePosition = note % OCTAVE_KEY_COUNT;
-  const keyNote = pianoKeyMaps.find((keyMap) => keyMap.note === octavePosition);
+  const keyNote = trebleNotes.find((keyMap) => keyMap.note === octavePosition);
 
   console.log("Received MIDI data:", data);
-  printLog(`Key: ${keyNote?.name} | Note Id: ${note} | Velocity: ${velocity}`);
+  printLog(
+    `Key: ${keyNote?.name} | Note Id: ${keyNote?.id} | Velocity: ${velocity}`
+  );
   updateClefOnKeypress(note);
 }
