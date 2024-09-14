@@ -219,19 +219,20 @@ function handleMIDIMessage(midiMsgEvent) {
 
   const [data0, data1, data2, noteId, velocity] = data;
 
-  printLog(`DATA: ${data}`);
-
   // Do nothing except when piano keydown (ignore keyup events)
   if (data2 !== PIANO_KEYDOWN_INT) return;
 
   const octavePosition = noteId % OCTAVE_KEY_COUNT;
   const keyNote = trebleNotes.find((keyMap) => keyMap.id === octavePosition);
 
+  printLog(`KEYNOTE: ${keyNote}`);
+
   console.log("Received MIDI data:", data);
+  printLog(`DATA: ${data}`);
   printLog(
     `Key: ${keyNote?.name} | Note Id: ${keyNote?.id} | Velocity: ${velocity}`
   );
-  updateClefOnKeypress(note);
+  updateClefOnKeypress(noteId);
 }
 
 // to do
