@@ -225,9 +225,7 @@ function handleMIDIMessage(midiMsgEvent) {
   if (data2 !== PIANO_KEYDOWN_INT) return;
 
   const octavePosition = noteId % OCTAVE_KEY_COUNT;
-  const keyNote = trebleNotes.find(
-    (keyMap) => keyMap.noteId === octavePosition
-  );
+  const keyNote = trebleNotes.find((keyMap) => keyMap.id === octavePosition);
 
   console.log("Received MIDI data:", data);
   printLog(
