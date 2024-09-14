@@ -215,16 +215,19 @@ function handleMIDIMessage(midiMsgEvent) {
 
   for (let i = 0; i < value.byteLength; i++) {
     data.push(value.getUint8(i));
-    printLog(`DATA: ${data}`);
   }
 
-  const [data2, note, velocity] = data;
+  const [data0, data1, data2, noteId, velocity] = data;
+
+  printLog(`DATA: ${data}`);
 
   // Do nothing except when piano keydown (ignore keyup events)
   if (data2 !== PIANO_KEYDOWN_INT) return;
 
-  const octavePosition = note % OCTAVE_KEY_COUNT;
-  const keyNote = trebleNotes.find((keyMap) => keyMap.note === octavePosition);
+  const octavePosition = noteId % OCTAVE_KEY_COUNT;
+  const keyNote = trebleNotes.find(
+    (keyMap) => keyMap.noteId === octavePosition
+  );
 
   console.log("Received MIDI data:", data);
   printLog(
@@ -232,3 +235,8 @@ function handleMIDIMessage(midiMsgEvent) {
   );
   updateClefOnKeypress(note);
 }
+
+// to do
+// identify what is the output of data
+// create a logic for the notes that has flats and sharps and add identification if the note is sharp or flat
+// create another lines and notes for the bass clef
