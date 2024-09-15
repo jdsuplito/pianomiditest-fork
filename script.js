@@ -111,10 +111,11 @@ function startGame() {
 }
 
 // Updates the state of the clef when a key press occurs, marking notes as correct or incorrect
-const updateClefOnKeypress = (noteId, forceCorrect = false) => {
+const updateClefOnKeypress = (noteId, forceCorrect) => {
   const oldestActiveNoteId = parseInt(
     activeNotes[0]?.getAttribute("data-note-id")
   );
+  console.log("OLDEST", activeNotes, oldestActiveNoteId); //BAKIT UNDEFINED ANG NAKUKUHA DITO
   if (oldestActiveNoteId === noteId || forceCorrect) {
     activeNotes[0].remove(); // Remove the oldest note
     activeNotes.shift(); // Remove the note from the active notes list
@@ -222,13 +223,10 @@ function handleMIDIMessage(midiMsgEvent) {
   // Do nothing except when piano keydown (ignore keyup events)
   if (data2 !== PIANO_KEYDOWN_INT) return;
 
-  const octavePosition = noteId % OCTAVE_KEY_COUNT;
-  const keyNote = trebleNotes.find((keyMap) => keyMap.id === octavePosition);
-
-  printLog(`KEYNOTE: ${keyNote}`);
+  // const octavePosition = noteId % OCTAVE_KEY_COUNT;
+  const keyNote = trebleNotes.find((keyMap) => keyMap.id === noteId);
 
   console.log("Received MIDI data:", data);
-  printLog(`DATA: ${data}`);
   printLog(
     `Key: ${keyNote?.name} | Note Id: ${keyNote?.id} | Velocity: ${velocity}`
   );
